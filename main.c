@@ -1,34 +1,6 @@
 #include "philo.h"
 
-int	init_mutexes(t_params *data)
-{
-	int	i;
-
-	i = 0;
-	data->forks = (t_mutex *)malloc(sizeof(t_mutex) * data->num_of_philo);
-	if (!data->forks)
-	{
-		printf("Malloc error\n");
-		return (0);
-	}
-	while (i < data->num_of_philo)
-	{
-		if(pthread_mutex_init(data->forks + i, NULL))
-		{
-			printf("Mutex init error\n");
-			return (0);
-		}
-		i++;
-	}
-	if(pthread_mutex_init(&data->output, NULL))
-	{
-			printf("Mutex init error\n");
-			return (0);
-	}
-	return (1);
-}
-
-void	init_forks(t_params *data, int i)
+static void	init_forks(t_params *data, int i)
 {
 	if (data->philos[i].philo_id == data->num_of_philo)
 	{
@@ -42,7 +14,7 @@ void	init_forks(t_params *data, int i)
 	}
 }
 
-int	init_philos(char **argv, t_params *data)
+static int	init_philos(char **argv, t_params *data)
 {
 	int	i;
 
@@ -67,7 +39,7 @@ int	init_philos(char **argv, t_params *data)
 	return (1);
 }
 
-int	is_valid_args(int argc, char **argv)
+static int	is_valid_args(int argc, char **argv)
 {
 	int	i;
 
@@ -89,7 +61,7 @@ int	is_valid_args(int argc, char **argv)
 	return (1);
 }
 
-t_params	*init_params(int argc, char **argv, t_params *data)
+static t_params	*init_params(int argc, char **argv, t_params *data)
 {
     data = (t_params *)malloc(sizeof(t_params));
 	if (!data)
@@ -98,6 +70,7 @@ t_params	*init_params(int argc, char **argv, t_params *data)
 		return (NULL);
 	}
 	memset(data, 0, sizeof(t_params));
+	data->num_of_philo = atoi(argv[1]); //libc
 	if (!is_valid_args(argc, argv) || !init_mutexes(data))
 	{
 		garbage_collector(data);
@@ -122,6 +95,18 @@ int	main(int argc, char **argv)
 	data = init_params(argc, argv, data);
 	if (!data)
 		return (1);
+	// if (!start_threads(data) || !join_threads(data) \
+	// 			|| !kill_mutexes(data))
+	// {
+	// 	garbage_collector(data);
+	// 	return (2);
+	// }
+	if (!start_threads(data))
+		return 2;
+	if (!join_threads(data))
+		return 3;
+	if (!kill_mutexes(data))
+		return 4;
 	garbage_collector(data);
 	return (0);
 }
