@@ -70,12 +70,13 @@ static t_params	*init_params(int argc, char **argv, t_params *data)
 		return (NULL);
 	}
 	memset(data, 0, sizeof(t_params));
-	data->num_of_philo = atoi(argv[1]); //libc
 	if (!is_valid_args(argc, argv) || !init_mutexes(data))
 	{
 		garbage_collector(data);
 		return (NULL);
 	}
+	data->num_of_philo = atoi(argv[1]); //libc
+	data->is_alive = 1;
 	data->philos = (t_philo *)malloc(sizeof(t_philo) * data->num_of_philo);
 	if (!data->philos)
 	{

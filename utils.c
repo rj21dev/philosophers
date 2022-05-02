@@ -49,7 +49,8 @@ void    *life(void *arg)
     philo = (t_philo *)arg;
     while (*philo->is_alive && philo->max_eatings != 0)
     {
-        philo->max_eatings -= 1;
+        --philo->max_eatings;
+        print_log(philo, 0, "is thinking");
         pthread_mutex_lock(philo->fork_1);
         print_log(philo, TAKE_FORK, "has taken a fork");
         pthread_mutex_lock(philo->fork_2);
@@ -60,8 +61,6 @@ void    *life(void *arg)
         pthread_mutex_unlock(philo->fork_2);
         print_log(philo, SLEEPING, "is sleaping");
         upd_usleep(philo->time_to_sleep * 1000);
-        print_log(philo, 0, "is thinking");
-        printf("$$$\n");
     }
     return (NULL);
 }
