@@ -9,7 +9,11 @@ static void print_log(t_philo *philo, int state, char *log)
     pthread_mutex_lock(philo->output);
     cur_time = get_time_ms();
     if (state == EATING)
+    {
+        pthread_mutex_lock(philo->lock_eatings);
         philo->last_eat_tm = cur_time;
+        pthread_mutex_unlock(philo->lock_eatings);
+    }
     else if (state == TAKE_FORK)
     {
         if (!philo->first_hand)
@@ -47,9 +51,9 @@ void    *life(void *arg)
     t_philo *philo;
 
     philo = (t_philo *)arg;
-    while (*philo->is_alive && philo->max_eatings != 0)
+    while (*philo->is_alive)
     {
-        --philo->max_eatings;
+
         print_log(philo, 0, "is thinking");
         pthread_mutex_lock(philo->fork_1);
         print_log(philo, TAKE_FORK, "has taken a fork");
@@ -57,6 +61,14 @@ void    *life(void *arg)
         print_log(philo, TAKE_FORK, "has taken a fork");
         print_log(philo, EATING, "is eating");
         upd_usleep(philo->time_to_eat * 1000);
+        pthread_mutex_lock(philo->lock_eatings);
+        --philo->max_eatings;
+        if (!philo->max_eatings)
+        {
+            pthread_mutex_unlock(philo->lock_eatings);
+            break;
+        }
+        pthread_mutex_unlock(philo->lock_eatings);
         pthread_mutex_unlock(philo->fork_1);
         pthread_mutex_unlock(philo->fork_2);
         print_log(philo, SLEEPING, "is sleaping");
@@ -71,21 +83,30 @@ void    *monitor(void *arg)
     t_philo *philo;
 
     philo = (t_philo *)arg;
-    while (*philo->is_alive && philo->max_eatings != 0)
+    while (*philo->is_alive)
     {
+        pthread_mutex_lock(philo->lock_eatings);
+        if (!philo->max_eatings)
+        {
+            pthread_mutex_unlock(philo->lock_eatings);
+            break;
+        }
+        
         cur_time = get_time_ms();
         if (cur_time - philo->last_eat_tm > philo->time_to_die)
         {
+            pthread_mutex_unlock(philo->lock_eatings);
             print_log(philo, 0, "died");
             *philo->is_alive = 0;
             break ;
         }
+        pthread_mutex_unlock(philo->lock_eatings);
         upd_usleep(500);
     }
-    if (philo->first_hand)
-        pthread_mutex_unlock(philo->fork_1);
-    if (philo->second_hand)
-        pthread_mutex_unlock(philo->fork_2);
+    // if (philo->first_hand)
+    //     pthread_mutex_unlock(philo->fork_1);
+    // if (philo->second_hand)
+    //     pthread_mutex_unlock(philo->fork_2);
     return (NULL);
 }
 

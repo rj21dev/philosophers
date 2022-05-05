@@ -25,6 +25,7 @@ int	init_mutexes(t_params *data)
 			printf("Mutex init error\n");
 			return (0);
 	}
+	pthread_mutex_init(&data->lock_eatings, NULL);
 	return (1);
 }
 
@@ -75,12 +76,10 @@ int	join_threads(t_params *data)
 	i = 0;
 	while (i < data->num_of_philo)
 	{
-		error = pthread_join(data->philos[i].life_thr, NULL);
-		if (error)
-			return (0);
-		error = pthread_join(data->philos[i].scan_thr, NULL);
-		if (error)
-			return (0);
+		pthread_join(data->philos[i].life_thr, NULL);
+
+		pthread_join(data->philos[i].scan_thr, NULL);
+		i++;
 	}
 	return (1);
 }

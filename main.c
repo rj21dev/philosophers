@@ -33,6 +33,7 @@ static int	init_philos(char **argv, t_params *data)
 		data->philos[i].is_alive = &data->is_alive;
 		data->philos[i].last_eat_tm = get_time_ms();
 		data->philos[i].output = &data->output;
+		data->philos[i].lock_eatings = &data->lock_eatings;
 		init_forks(data, i);
 		i++;
 	}
@@ -104,8 +105,7 @@ int	main(int argc, char **argv)
 	// }
 	if (!start_threads(data))
 		return 2;
-	if (!join_threads(data))
-		return 3;
+	join_threads(data);
 	if (!kill_mutexes(data))
 		return 4;
 	garbage_collector(data);

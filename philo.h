@@ -31,6 +31,9 @@ typedef struct	s_philo
     pthread_t   life_thr;
     pthread_t   scan_thr;
     t_mutex	    *output;
+    t_mutex     *lock_eatings;
+    t_mutex     *lock_time;
+    t_mutex     *lock_alive;
     t_mutex	    *fork_1;
     t_mutex	    *fork_2;
 }				t_philo;
@@ -42,6 +45,9 @@ typedef struct	s_params
 	t_philo	*philos;
 	t_mutex	*forks;
 	t_mutex	output;
+    t_mutex lock_eatings;
+    t_mutex lock_time;
+    t_mutex lock_alive;
 }				t_params;
 
 long	get_time_ms(void);
