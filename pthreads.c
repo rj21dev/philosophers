@@ -13,19 +13,12 @@ int	init_mutexes(t_params *data)
 	}
 	while (i < data->num_of_philo)
 	{
-		if(pthread_mutex_init(data->forks + i, NULL))
-		{
-			printf("Mutex init error\n");
-			return (0);
-		}
+		pthread_mutex_init(&data->forks[i], NULL);
 		i++;
 	}
-	if(pthread_mutex_init(&data->output, NULL))
-	{
-			printf("Mutex init error\n");
-			return (0);
-	}
-	pthread_mutex_init(&data->lock_eatings, NULL);
+	pthread_mutex_init(&data->output, NULL);
+	pthread_mutex_init(&data->synchro, NULL);
+	pthread_mutex_init(&data->dead, NULL);
 	return (1);
 }
 
@@ -40,29 +33,20 @@ int	kill_mutexes(t_params *data)
 			return (0);
 		i++;
 	}
+	pthread_mutex_destroy(&data->synchro);
+	pthread_mutex_destroy(&data->output);
+	pthread_mutex_destroy(&data->dead);
 	return (1);
 }
 
 int start_threads(t_params *data)
 {
     int i;
-	int	error;
 
     i = 0;
     while (i < data->num_of_philo)
     {
-        error = pthread_create(&data->philos[i].life_thr, NULL, life, &data->philos[i]);
-		if (error)
-			return (0);
-		// pthread_detach(data->philos[i].life_thr);
-		// if (error)
-		// 	return (0);
-        error = pthread_create(&data->philos[i].scan_thr, NULL, monitor, &data->philos[i]);
-		if (error)
-			return (0);
-		// pthread_detach(data->philos[i].scan_thr);
-		// if (error)
-		// 	return (0);
+    	pthread_create(&data->philos[i].life_tid, NULL, life, &data->philos[i]);
         i++;
     }
     return (1);
@@ -76,9 +60,7 @@ int	join_threads(t_params *data)
 	i = 0;
 	while (i < data->num_of_philo)
 	{
-		pthread_join(data->philos[i].life_thr, NULL);
-
-		pthread_join(data->philos[i].scan_thr, NULL);
+		pthread_join(data->philos[i].life_tid, NULL);
 		i++;
 	}
 	return (1);

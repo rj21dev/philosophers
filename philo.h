@@ -20,20 +20,17 @@ typedef pthread_mutex_t	t_mutex;
 typedef struct	s_philo
 {
 	int         philo_id;
-    int         first_hand;
-    int         second_hand;
     int         time_to_die;
     int         time_to_eat;
     int         time_to_sleep;
     int         max_eatings;
-    int         *is_alive;
+	int			cnt_eatings;
     long        last_eat_tm;
-    pthread_t   life_thr;
-    pthread_t   scan_thr;
+	int			*alive;
+    pthread_t   life_tid;
     t_mutex	    *output;
-    t_mutex     *lock_eatings;
-    t_mutex     *lock_time;
-    t_mutex     *lock_alive;
+    t_mutex     *synchro;
+	t_mutex		*dead;
     t_mutex	    *fork_1;
     t_mutex	    *fork_2;
 }				t_philo;
@@ -41,22 +38,23 @@ typedef struct	s_philo
 typedef struct	s_params
 {
 	int		num_of_philo;
-	int		is_alive;
+	int		alive;
 	t_philo	*philos;
 	t_mutex	*forks;
 	t_mutex	output;
-    t_mutex lock_eatings;
-    t_mutex lock_time;
-    t_mutex lock_alive;
+    t_mutex synchro;
+	t_mutex	dead;
 }				t_params;
 
-long	get_time_ms(void);
+long	get_tm(void);
+void 	print_log(t_philo *philo, char *log);
+void 	upd_usleep(unsigned n);
 void    garbage_collector(t_params *data);
 int	    init_mutexes(t_params *data);
 int	    kill_mutexes(t_params *data);
 int     start_threads(t_params *data);
 int	    join_threads(t_params *data);
 void    *life(void *arg);
-void    *monitor(void *arg);
+int		monitoring(t_params *data);
 
 #endif
