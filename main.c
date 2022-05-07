@@ -22,17 +22,19 @@ static int	init_philos(char **argv, t_params *data)
 	while (i < data->num_of_philo)
 	{
 		data->philos[i].philo_id = i + 1;
+		// data->philos[i].first_hand = 0;
+		// data->philos[i].second_hand = 0;
 		data->philos[i].time_to_die = atoi(argv[2]); //libc
 		data->philos[i].time_to_eat = atoi(argv[3]);
 		data->philos[i].time_to_sleep = atoi(argv[4]);
 		data->philos[i].max_eatings = -1;
 		if (argv[5])
 			data->philos[i].max_eatings = atoi(argv[5]);
-		data->philos[i].cnt_eatings = 0;
-		data->philos[i].last_eat_tm = get_tm();
+		data->philos[i].is_alive = &data->is_alive;
+		data->philos[i].last_eat_tm = get_time_ms();
 		data->philos[i].output = &data->output;
-		data->philos[i].synchro = &data->synchro;
-		data->philos[i].dead = &data->dead;
+		data->philos[i].lock_eatings = &data->lock_eatings;
+		data->philos[i].lock_alive = &data->lock_alive;
 		init_forks(data, i);
 		i++;
 	}
@@ -76,7 +78,15 @@ static t_params	*init_params(int argc, char **argv, t_params *data)
 		return (NULL);
 	}
 	data->num_of_philo = atoi(argv[1]); //libc
-	data->alive = 1;
+	if (data->num_of_philo == 1)
+	{
+		printf("%ld 1 has taken a fork\n", get_time_ms());
+		usleep(atoi(argv[2]) * 1000);
+		printf("%ld 1 died\n", get_time_ms());
+		garbage_collector(data);
+		return (NULL);
+	}
+	data->is_alive = 1;
 	data->philos = (t_philo *)malloc(sizeof(t_philo) * data->num_of_philo);
 	if (!data->philos)
 	{
@@ -84,7 +94,6 @@ static t_params	*init_params(int argc, char **argv, t_params *data)
 		garbage_collector(data);
 		return (NULL);
 	}
-	memset(data->philos, 0, sizeof(data->philos));
 	init_philos(argv, data);
     return (data);
 }
@@ -97,11 +106,17 @@ int	main(int argc, char **argv)
 	data = init_params(argc, argv, data);
 	if (!data)
 		return (1);
-	start_threads(data);
-	monitoring(data);
+	// if (!start_threads(data) || !join_threads(data) \
+	// 			|| !kill_mutexes(data))
+	// {
+	// 	garbage_collector(data);
+	// 	return (2);
+	// }
+	if (!start_threads(data))
+		return 2;
 	join_threads(data);
-	kill_mutexes(data);
+	if (!kill_mutexes(data))
+		return 4;
 	garbage_collector(data);
 	return (0);
-
 }
