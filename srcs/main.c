@@ -106,7 +106,7 @@ int	main(int argc, char **argv)
 	data = init_params(argc, argv, data);
 	if (!data)
 		return (1);
-	// if (!start_threads(data) || !join_threads(data) \
+	// if (!start_threads(data) || !join_threads(data) 
 	// 			|| !kill_mutexes(data))
 	// {
 	// 	garbage_collector(data);
